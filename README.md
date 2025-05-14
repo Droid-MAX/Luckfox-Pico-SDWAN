@@ -38,17 +38,29 @@ vi /etc/ntp.conf
 # 修改默认的 ntp 服务器地址
 ```
 
-#### 2. 固定 MAC 地址
+#### 2. 修改 interfaces 配置文件
 
 ```bash
-# 编辑 /userdata/ethaddr.txt 配置文件
-vi /userdata/ethaddr.txt
+# 编辑 /etc/network/interfaces 配置文件
+vim /etc/network/interfaces
 
-# 填入合法的 MAC 地址后保存退出，重启网络服务或者重启系统
+# 新增 eth0 网卡配置
+auto eth0
+iface eth0 inet dhcp
+
+# 重启网络服务以应用
+/etc/init.d/S40network reload
+```
+
+#### 3. 生成内核模块依赖信息
+
+```bash
+# 执行 insmod_ko.sh 脚本
+/oem/usr/ko/insmod_ko.sh
 ```
 
 ### ⚠️ Wireguard 特殊配置要求
-因固件当中缺失 stat/resolvconf 命令，故需执行以下必要修改：
+因固件当中缺失 stat 命令，故需执行以下必要修改：
 
 #### 1. 修复 wg-quick 脚本兼容性
 
@@ -59,21 +71,3 @@ vi $(which wg-quick)
 # 定位并注释掉 stat 命令所在行代码
 ```
 
-#### 2. Wireguard 配置文件限制说明
-
-```bash
-# ✅ 合法配置示例
-[Interface]
-PrivateKey = xxxxxxxxx
-Address = 10.8.0.2/24
-MTU = 1280
-
-# ❌ 禁止包含以下字段（固件无resolvconf支持）：
-DNS = 8.8.8.8
-
-# ❌ 禁止包含以下字段（内核未启用策略路由功能）：
-AllowedIPs = 192.168.1.0/24
-
-# 手动配置DNS（如需）：
-echo "nameserver 8.8.8.8" > /etc/resolv.conf
-```
