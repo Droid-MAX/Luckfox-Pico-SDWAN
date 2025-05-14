@@ -33,7 +33,7 @@
 
 ```bash
 # 编辑 /etc/ntp.conf 配置文件
-vi /etc/ntp.conf
+vim /etc/ntp.conf
 
 # 修改默认的 ntp 服务器地址
 ```
@@ -55,7 +55,8 @@ iface eth0 inet dhcp
 #### 3. 生成内核模块依赖信息
 
 ```bash
-# 执行 insmod_ko.sh 脚本
+# 赋予可执行权限后执行 insmod_ko.sh 脚本
+chmod +x /oem/usr/ko/insmod_ko.sh
 /oem/usr/ko/insmod_ko.sh
 ```
 
@@ -66,7 +67,7 @@ iface eth0 inet dhcp
 
 ```bash
 # 编辑 wg-quick 脚本
-vi $(which wg-quick)
+vim $(which wg-quick)
 
 # 定位并注释掉 stat 命令所在行代码
 ```
