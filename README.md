@@ -48,6 +48,9 @@ vim /etc/network/interfaces
 auto eth0
 iface eth0 inet dhcp
 
+# 固定 MAC 地址
+hwaddress ether XX:XX:XX:XX:XX:XX
+
 # 重启网络服务以应用
 /etc/init.d/S40network reload
 ```
