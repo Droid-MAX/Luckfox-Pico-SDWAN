@@ -27,7 +27,7 @@
 ✅ ipv6 协议支持
 
 ### 开局配置
-固件基于官方 Buildroot 最小化构建，默认使用 ADB/SSH/TELNET 访问系统，用户名及密码与官方固件默认保持一致，固件烧录完毕后，需手动配置 ntp 服务器地址，以及相关初始化操作
+固件基于官方 Buildroot 最小化构建，内核版本为5.10.110，默认使用 ADB/SSH/TELNET 访问系统，用户名及密码与官方固件默认保持一致，固件烧录完毕后，需手动配置 ntp 服务器地址，以及相关初始化操作
 
 #### 1. 自定义 ntp 服务器地址
 
@@ -73,5 +73,14 @@ chmod +x /oem/usr/ko/insmod_ko.sh
 vim $(which wg-quick)
 
 # 定位并注释掉 stat 命令所在行代码
+```
+
+### Tips:
+使用本仓库中的 busybox 可以直接将开发板重启到 MaskRom 模式
+
+```bash
+# 赋予可执行权限后执行
+chmod +x /path/to/busybox
+/path/to/busybox reboot loader
 ```
 
