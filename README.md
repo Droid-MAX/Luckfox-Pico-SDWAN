@@ -95,3 +95,8 @@ chmod +x /path/to/busybox
 ![wechat](pic/wechat.png)
 
 [捐助列表](https://github.com/Droid-MAX/Luckfox-Pico-SDWAN/wiki/Donate‐list)
+
+## 友情链接
+
+[跟着佐大学OpenWrt开发](https://forgotfun.org/)
+
