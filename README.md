@@ -84,3 +84,14 @@ chmod +x /path/to/busybox
 /path/to/busybox reboot loader
 ```
 
+## 捐助
+
+1. Alipay(支付宝):
+
+![alipay](pic/alipay.jpg)
+
+2. Wechat(微信):
+
+![wechat](pic/wechat.png)
+
+[捐助列表](https://github.com/Droid-MAX/Luckfox-Pico-SDWAN/wiki/Donate‐list)
