@@ -34,7 +34,6 @@ enable_ipv4_forward(){
 }
 
 check_iptables_rule_exists(){
-	check_inbond_addr
 	local forward_rule_1=$(iptables -C FORWARD -i $inbond_iface -o $outbond_iface -j ACCEPT 2>/dev/null; echo $?)
 	local forward_rule_2=$(iptables -C FORWARD -i $outbond_iface -o $inbond_iface -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null; echo $?)
 	local nat_rule=$(iptables -t nat -C POSTROUTING -s $inbond_cidr_addr -o $outbond_iface -j MASQUERADE 2>/dev/null; echo $?)
