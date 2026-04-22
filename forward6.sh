@@ -7,40 +7,13 @@ if [ $EUID != 0 ]; then
 fi
 
 inbond_iface="usb0"
-outbond_iface="autowg"
-peer_subnet=""
+outbond_iface="eth0"
 
 check_iface_exists() {
   ip link show "$1" >/dev/null 2>&1 || {
     echo "[!] Interface $1 does not exist"
     return 1
   }
-}
-
-get_peer_subnet() {
-  local iface="$1"
-  local subnet
-
-  subnet=$(wg show "$iface" 2>/dev/null | awk '/allowed ips:/ {
-      for(i=3;i<=NF;i++) if($i ~ /^[0-9a-f:]+:\/[0-9]+$/ && $i !~ /\/128$/) {print $i; exit}
-  }')
-
-  if [ -n "$subnet" ]; then
-    peer_subnet="$subnet"
-    echo "[*] Subnet obtained from peer config: $peer_subnet"
-    return 0
-  fi
-
-  local addr
-  addr=$(ip -6 -br addr show "$iface" 2>/dev/null | awk '{for(i=2;i<=NF;i++) if($i !~ /^fe80:/) {sub(/\/.*/,"",$i); print $i; exit}}')
-  if [ -n "$addr" ]; then
-    peer_subnet="${addr}/64"
-    echo "[*] Subnet inferred from interface address: $peer_subnet"
-    return 0
-  fi
-
-  echo "[!] Unable to determine peer subnet"
-  return 1
 }
 
 check_ipv6_forward() {
@@ -103,70 +76,28 @@ remove_ip6tables_rules() {
   fi
 }
 
-check_ipv6_route_exists() {
-  ip -6 route show "$peer_subnet" | grep -q "dev $outbond_iface" && echo 0 || echo 1
-}
-
-add_ipv6_route() {
-  if [ "$(check_ipv6_route_exists)" -eq 1 ]; then
-    echo "[+] Adding IPv6 route $peer_subnet dev $outbond_iface"
-    ip -6 route add "$peer_subnet" dev "$outbond_iface" || {
-      echo "[!] Failed to add IPv6 route"
-      exit 1
-    }
-  else
-    echo "[!] IPv6 route already exists"
-  fi
-}
-
-remove_ipv6_route() {
-  if [ "$(check_ipv6_route_exists)" -eq 0 ]; then
-    echo "[+] Deleting IPv6 route $peer_subnet dev $outbond_iface"
-    ip -6 route del "$peer_subnet" dev "$outbond_iface"
-  else
-    echo "[!] IPv6 route does not exist"
-  fi
-}
-
 do_enable() {
-  if [ -z "$peer_subnet" ]; then
-    get_peer_subnet "$outbond_iface" || exit 1
-  fi
-
   enable_ipv6_forward
   add_ip6tables_rules
-  add_ipv6_route
   echo "[+] IPv6 NAT forwarding enabled"
   echo "    Inbound interface : $inbond_iface"
   echo "    Outbound interface: $outbond_iface"
-  echo "    Peer subnet       : $peer_subnet"
   exit 0
 }
 
 do_disable() {
-  if [ -z "$peer_subnet" ]; then
-    get_peer_subnet "$outbond_iface" || {
-      echo "[!] Unable to obtain subnet automatically, skipping route removal"
-      peer_subnet=""
-    }
-  fi
-
   remove_ip6tables_rules
-  if [ -n "$peer_subnet" ]; then
-    remove_ipv6_route
-  fi
   echo "[+] IPv6 NAT forwarding disabled"
   exit 0
 }
 
 usage() {
-    echo "Usage: $0 {enable|disable} [-i/--inbond <interface>] [-o/--outbond <interface>] [-s/--peer-subnet <cidr>]"
+    echo "Usage: $0 {enable|disable} [-i/--inbond <interface>] [-o/--outbond <interface>]"
     echo "Options:"
-    echo "  enable/disable           Enable or disable forwarding (required)"
-    echo "  -i, --inbond <iface>     Specify inbound interface (default: usb0)"
-    echo "  -o, --outbond <iface>    Specify outbound interface (default: autowg)"
-    echo "  -s, --peer-subnet <cidr> Manually specify peer IPv6 subnet (e.g., fde3:25fb:7f6c:1::/64)"
-    echo "  -h, --help               Show this help"
+    echo "  enable/disable        Enable or disable forwarding (required)"
+    echo "  -i, --inbond <iface>  Specify inbound interface (default: usb0)"
+    echo "  -o, --outbond <iface> Specify outbound interface (default: eth0)"
+    echo "  -h, --help            Show this help"
     exit 1
 }
 
@@ -183,10 +114,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     -o|--outbond)
       outbond_iface="$2"
-      shift 2
-      ;;
-    -s|--peer-subnet)
-      peer_subnet="$2"
       shift 2
       ;;
     -h|--help)
